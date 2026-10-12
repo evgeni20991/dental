@@ -1,0 +1,231 @@
+---
+import type { Content } from '../content/site';
+import { brand, config } from '../content/site';
+interface Props { c: Content; }
+const { c } = Astro.props;
+const ru = c.code === 'ru';
+const privacyHref = ru ? '/privacy/' : '/en/privacy/';
+---
+<section id="booking" class="section booking">
+  <div class="shell booking-grid">
+    <div>
+      <p class="label" data-reveal>{c.booking.label}</p>
+      <h2 class="h2 booking-title" data-reveal>{c.booking.title}</h2>
+      <p class="lead" data-reveal>{c.booking.lead}</p>
+
+      <a href={brand.phoneHref} class="call-card press" data-reveal>
+        <span class="call-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+            <path d="M4.6 3h3l1.2 3-1.7 1.2a9.5 9.5 0 0 0 4.7 4.7L13 10.2l3 1.2v3a1.5 1.5 0 0 1-1.7 1.5A12.6 12.6 0 0 1 3.1 4.7 1.5 1.5 0 0 1 4.6 3Z"
+                  stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>
+          <strong>{brand.phone}</strong>
+          <small>{c.booking.orCall}</small>
+        </span>
+      </a>
+
+      <dl class="contacts" data-reveal>
+        <div>
+          <dt>{ru ? 'Адрес' : 'Address'}</dt>
+          <dd>
+            <a href={brand.mapUrl} target="_blank" rel="noopener">{ru ? brand.address : brand.addressEn}</a>
+            <span class="metro">{ru ? brand.metro : brand.metroEn}</span>
+          </dd>
+        </div>
+        <div>
+          <dt>{ru ? 'Часы работы' : 'Hours'}</dt>
+          <dd>{ru ? brand.hours : brand.hoursEn}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <form class="card form" data-reveal novalidate data-ym={config.metrikaId}>
+      <fieldset class="topics">
+        <legend>{c.booking.topicLabel}</legend>
+        <div class="chips">
+          {c.booking.topics.map((t) => (
+            <label class="chip">
+              <input type="radio" name="topic" value={t} />
+              <span>{t}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <label>
+        <span>{c.booking.fields.name}</span>
+        <input name="name" type="text" autocomplete="name" required />
+      </label>
+      <label>
+        <span>{c.booking.fields.phone}</span>
+        <input name="phone" type="tel" inputmode="tel" autocomplete="tel" required />
+      </label>
+      <label>
+        <span>{c.booking.fields.comment}</span>
+        <textarea name="comment" rows="2"></textarea>
+      </label>
+
+      <input type="text" name="website" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true" />
+
+      <!-- Согласие стоит ДО кнопки и является галкой, а не подписью под ней:
+           закон требует действия человека, а не надписи рядом. Форма помечена
+           novalidate, но reportValidity() в скрипте проверку выполняет. -->
+      <label class="consent">
+        <input type="checkbox" name="consent" required />
+        <span>{c.booking.consent} <a href={privacyHref}>{c.booking.consentLink}</a>.</span>
+      </label>
+
+      <button
+        type="submit"
+        class="btn btn-primary form-submit press"
+        data-send={c.booking.submit}
+        data-sending={c.booking.sending}
+        data-retry={c.booking.retry}
+      >{c.booking.submit}</button>
+      <p class="form-msg" data-ok={c.booking.ok} data-err={c.booking.err} role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<style>
+  .booking { background: var(--color-surface); border-top: 1px solid var(--color-line); }
+  .booking-grid { display: grid; gap: 36px; }
+  .booking-title { margin: 14px 0 18px; }
+
+  /* Звонок отдельной крупной целью: в метро набрать номер проще, чем печатать. */
+  .call-card {
+    display: flex; align-items: center; gap: 14px; margin-top: 26px;
+    padding: 14px 18px; min-height: 64px;
+    border: 1px solid var(--color-line); border-radius: var(--radius-card);
+    text-decoration: none; color: var(--color-ink); background: var(--color-canvas);
+    transition: border-color var(--dur-micro) var(--ease-out-soft), transform var(--dur-micro) var(--ease-out-soft);
+  }
+  .call-card:hover { border-color: var(--color-ink); }
+  .call-icon {
+    flex: none; width: 40px; height: 40px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--color-accent-wash); color: var(--color-accent-deep);
+  }
+  .call-card strong { display: block; font-size: 1.06rem; font-weight: 500; }
+  .call-card small { display: block; font-size: 0.82rem; color: var(--color-muted); margin-top: 2px; }
+
+  .contacts { margin-top: 26px; display: grid; gap: 16px; }
+  .contacts dt { font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-faint); }
+  .contacts dd { margin-top: 5px; font-size: 1rem; }
+  .contacts a { color: var(--color-ink); text-decoration: none; border-bottom: 1px solid var(--color-line); }
+  .contacts a:hover { border-color: var(--color-ink); }
+  .metro { display: block; font-size: 0.88rem; color: var(--color-muted); margin-top: 5px; }
+
+  .form { padding: 26px 22px; display: grid; gap: 16px; background: var(--color-canvas); }
+  .form label { display: grid; gap: 7px; }
+  .form label > span { font-size: 0.82rem; color: var(--color-muted); }
+  .form input[type='text'], .form input[type='tel'], .form textarea {
+    width: 100%; font: inherit; font-size: 16px;  /* 16px: меньше — iOS зумит страницу при фокусе */
+    color: var(--color-ink);
+    background: var(--color-surface); border: 1px solid var(--color-line);
+    border-radius: var(--radius-soft); padding: 13px 15px; resize: vertical;
+    transition: border-color 240ms var(--ease-out-soft), box-shadow 240ms var(--ease-out-soft);
+  }
+  .form input:focus, .form textarea:focus {
+    outline: none; border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-wash);
+  }
+
+  /* Выбор темы в одно касание — печатать в метро неудобно. */
+  .topics { border: 0; padding: 0; margin: 0; }
+  .topics legend { font-size: 0.82rem; color: var(--color-muted); padding: 0 0 9px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip span {
+    display: flex; align-items: center; min-height: 44px; padding: 0 16px;
+    border: 1px solid var(--color-line); border-radius: var(--radius-pill);
+    background: var(--color-surface); font-size: 0.9rem; cursor: pointer;
+    transition: background-color var(--dur-micro) var(--ease-out-soft),
+                border-color var(--dur-micro) var(--ease-out-soft),
+                color var(--dur-micro) var(--ease-out-soft);
+  }
+  .chip span:active { transform: scale(0.97); }
+  .chip input:checked + span {
+    background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent);
+  }
+  .chip input:focus-visible + span { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+  .form-submit { justify-content: center; margin-top: 4px; min-height: 52px; }
+  .form-submit[disabled] { opacity: 0.6; pointer-events: none; }
+  /* Общее правило .form label — grid, поэтому галку раскладываем отдельно,
+     иначе квадратик встаёт над текстом, а не рядом с ним. */
+  .form label.consent { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+  .form label.consent input {
+    flex: none; width: 18px; height: 18px; margin-top: 1px;
+    accent-color: var(--color-accent); cursor: pointer;
+  }
+  .form label.consent > span { font-size: 0.78rem; color: var(--color-faint); line-height: 1.5; }
+  .form label.consent a { color: var(--color-muted); }
+  .form-msg:empty { display: none; }
+  .form-msg { font-size: 0.9rem; padding: 12px 14px; border-radius: var(--radius-soft); }
+  .form-msg.ok { background: var(--color-accent-wash); color: var(--color-accent-deep); }
+  .form-msg.err { background: #fdeaea; color: #a12525; }
+  .hp { position: absolute; left: -9999px; opacity: 0; }
+  @media (min-width: 900px) { .booking-grid { grid-template-columns: 1fr 1fr; gap: 60px; } }
+</style>
+
+<script>
+  const form = document.querySelector('.form') as HTMLFormElement | null;
+  if (form) {
+    const btn = form.querySelector('.form-submit') as HTMLButtonElement;
+    const msg = form.querySelector('.form-msg') as HTMLElement;
+    let failed = false;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+
+      msg.className = 'form-msg';
+      msg.textContent = '';
+      btn.disabled = true;
+      btn.textContent = btn.dataset.sending || '';
+
+      try {
+        const fd = new FormData(form);
+        const res = await fetch('/api/booking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: fd.get('name'),
+            phone: fd.get('phone'),
+            topic: fd.get('topic'),
+            comment: fd.get('comment'),
+            website: fd.get('website'),
+            lang: document.documentElement.lang,
+            page: location.href,
+          }),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        msg.classList.add('ok');
+        msg.textContent = msg.dataset.ok || '';
+
+        /* Цель Метрики — только на реально доставленной заявке, не на клике
+           по кнопке. Иначе статистика показывает заявки, которых не было. */
+        const ymId = form.dataset.ym;
+        const ym = (window as unknown as { ym?: (...a: unknown[]) => void }).ym;
+        if (ymId && ym) ym(Number(ymId), 'reachGoal', 'booking');
+
+        form.reset();
+        failed = false;
+        btn.textContent = btn.dataset.send || '';
+      } catch {
+        /* Связь в метро рвётся постоянно. Введённое НЕ стираем и прямо
+           предлагаем повтор, чтобы человеку не пришлось набирать всё заново. */
+        failed = true;
+        msg.classList.add('err');
+        msg.textContent = msg.dataset.err || '';
+        btn.textContent = btn.dataset.retry || btn.dataset.send || '';
+      } finally {
+        btn.disabled = false;
+        if (!failed) btn.textContent = btn.dataset.send || '';
+      }
+    });
+  }
+</script>

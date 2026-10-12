@@ -1,0 +1,323 @@
+---
+import '../styles/theme.css';
+import { brand, config, type Content } from '../content/site';
+
+interface Props { c: Content; lang: string; }
+const { c, lang } = Astro.props;
+
+const ru = lang === 'ru';
+
+// Все абсолютные адреса собираются здесь, из Astro.site (astro.config.mjs).
+// Смена домена = правка одной строки в конфиге, а не поиск по всей разметке.
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL(config.ogImage, Astro.site).href;
+const altUrl = new URL(c.altHref, Astro.site).href;
+const home = new URL('/', Astro.site).href;
+
+// Разметка организации для поиска и карт. В демо-режиме НЕ выводится:
+// это утверждение о существующей клинике с лицензией по конкретному адресу,
+// а клиника вымышлена. Код готов и включается вместе с isDemo: false.
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Dentist',
+  name: ru ? brand.name : brand.nameEn,
+  url: canonical,
+  image: ogImage,
+  telephone: brand.phone,
+  email: brand.email,
+  priceRange: '₽₽',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: brand.street,
+    addressLocality: brand.city,
+    addressCountry: 'RU',
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: brand.geo.lat, longitude: brand.geo.lon },
+  openingHours: brand.openingHours,
+  hasMap: brand.mapUrl,
+};
+---
+<!doctype html>
+<html lang={lang}>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{c.meta.title}</title>
+  <meta name="description" content={c.meta.description} />
+  <link rel="canonical" href={canonical} />
+  {config.isDemo && <meta name="robots" content="noindex, nofollow" />}
+
+  <meta property="og:title" content={c.meta.title} />
+  <meta property="og:description" content={c.meta.description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:site_name" content={ru ? brand.name : brand.nameEn} />
+  <meta property="og:locale" content={ru ? 'ru_RU' : 'en_US'} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <meta name="theme-color" content="#f4f6fb" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+  <!-- hreflang: абсолютные адреса, ссылка на саму себя и x-default —
+       иначе связка языков поисковиком не засчитывается. -->
+  <link rel="alternate" hreflang={lang} href={canonical} />
+  <link rel="alternate" hreflang={ru ? 'en' : 'ru'} href={altUrl} />
+  <link rel="alternate" hreflang="x-default" href={home} />
+
+  {!config.isDemo && <script type="application/ld+json" is:inline set:html={JSON.stringify(schema)} />}
+
+  <!-- Шрифты свои, с этого же домена: обращение к серверам Google отдаёт им
+       IP посетителя. Предзагружаем только кириллицу — сайт русский. -->
+  <link rel="preload" href="/fonts/unbounded-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/onest-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+</head>
+<body>
+  <a href="#main" class="skip">Перейти к содержимому</a>
+  <slot />
+
+  <style is:global>
+    .skip {
+      position: absolute; left: -9999px; top: 12px;
+      background: var(--color-ink); color: #fff; padding: 10px 18px;
+      border-radius: var(--radius-pill); z-index: 100;
+    }
+    .skip:focus { left: 20px; }
+    /* Final state, forced, when the animation clock never started. */
+    .motion-dead [data-reveal],
+    .motion-dead [data-reveal-soft],
+    .motion-dead [data-hero-fade],
+    .motion-dead [data-hero-art],
+    .motion-dead .hero-word,
+    .motion-dead .faq-panel {
+      opacity: 1 !important;
+      transform: none !important;
+      visibility: visible !important;
+    }
+    .motion-dead .faq-panel { height: 0; }
+  </style>
+
+  <script>
+    import gsap from 'gsap';
+    import { ScrollTrigger } from 'gsap/ScrollTrigger';
+    import Lenis from 'lenis';
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    /* ── Smooth scroll. Never smoothTouch: it feels broken on phones. ───── */
+    if (!reduced) {
+      const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((t) => lenis.raf(t * 1000));
+      gsap.ticker.lagSmoothing(0);
+
+      document.querySelectorAll('a[href^="#"]').forEach((a) => {
+        a.addEventListener('click', (e) => {
+          const id = a.getAttribute('href');
+          if (!id || id === '#') return;
+          const el = document.querySelector(id);
+          if (!el) return;
+          e.preventDefault();
+          lenis.scrollTo(el as HTMLElement, { offset: -80 });
+        });
+      });
+    }
+
+    /* ── Nav: solid once we leave the hero ─────────────────────────────── */
+    ScrollTrigger.create({
+      start: 'top -60',
+      end: 99999,
+      toggleClass: { className: 'is-stuck', targets: '.nav' },
+    });
+
+    /* ── Watchdog: never leave the page blank ────────────────────────────
+       Scroll reveals start at opacity 0, and GSAP's clock is driven by
+       requestAnimationFrame. Where rAF is suspended - some in-app webviews,
+       aggressive battery savers, embedded preview panes - the tween never
+       advances and the visitor is left staring at an empty page. setTimeout
+       keeps running in those conditions, so it can detect the dead clock and
+       hand the finished state straight to the user. Verified: this environment
+       reports rAF at 0 fps while document.visibilityState is "visible". */
+    let ticks = 0;
+    gsap.ticker.add(() => { ticks++; });
+    setTimeout(() => {
+      if (ticks < 2) {
+        document.documentElement.classList.add('motion-dead');
+        gsap.globalTimeline.getChildren(true, true, false).forEach((t) => t.progress(1));
+        ScrollTrigger.getAll().forEach((st) => st.kill(false));
+      }
+    }, 1400);
+
+    const mm = gsap.matchMedia();
+
+    /* Everything decorative lives inside this block, so reduced-motion users
+       get the finished state immediately instead of an empty page. */
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      /* Hero: words rise out of a mask. The mask is what separates
+         "animated" from "premium" - a bare fade reads as a template. */
+      const heroWords = gsap.utils.toArray<HTMLElement>('.hero-word');
+      if (heroWords.length) {
+        gsap.set(heroWords, { yPercent: 115 });
+        gsap.to(heroWords, {
+          yPercent: 0, duration: 1.15, ease: 'expo.out', stagger: 0.055, delay: 0.15,
+        });
+      }
+      gsap.from('[data-hero-fade]', {
+        y: 22, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.09, delay: 0.55,
+      });
+      gsap.from('[data-hero-art]', {
+        scale: 0.92, opacity: 0, duration: 1.4, ease: 'expo.out', delay: 0.25,
+      });
+
+      /* Scroll reveals: batched, and once. Re-firing on every pass is nauseating. */
+      ScrollTrigger.batch('[data-reveal]', {
+        start: 'top 86%',
+        once: true,
+        onEnter: (els) =>
+          gsap.from(els, {
+            y: 26, opacity: 0, duration: 0.66, ease: 'power3.out', stagger: 0.06, overwrite: true,
+          }),
+      });
+
+      /* Grid cards get a DIFFERENT reveal: opacity and scale only, never a
+         vertical offset. A row of a grid reads as an aligned structure, so
+         staggering a Y translation across it makes the row look broken for as
+         long as the tween runs - two cards in one row sitting 19px apart looks
+         like a layout bug, not an animation. Nothing translates here, so
+         nothing can fall out of line at any frame. */
+      ScrollTrigger.batch('[data-reveal-soft]', {
+        start: 'top 88%',
+        once: true,
+        onEnter: (els) =>
+          gsap.from(els, {
+            opacity: 0, scale: 0.97, duration: 0.6, ease: 'power2.out',
+            stagger: 0.05, transformOrigin: '50% 60%', overwrite: true,
+          }),
+      });
+
+      /* Ambient drift on the hero artwork - slow, continuous, never distracting. */
+      gsap.to('[data-float]', {
+        y: -14, duration: 3.4, ease: 'sine.inOut', repeat: -1, yoyo: true,
+      });
+
+      /* Parallax. Background slowest, foreground fastest; wrapper clips. */
+      gsap.utils.toArray<HTMLElement>('[data-parallax]').forEach((el) => {
+        const depth = Number(el.dataset.parallax) || 1;
+        gsap.to(el, {
+          yPercent: -7 * depth,
+          ease: 'none',
+          scrollTrigger: { trigger: el.parentElement, scrub: 0.6 },
+        });
+      });
+
+      /* Counters */
+      gsap.utils.toArray<HTMLElement>('[data-count]').forEach((el) => {
+        const target = Number(el.dataset.count);
+        const decimals = (el.dataset.count || '').includes('.') ? 1 : 0;
+        const obj = { v: 0 };
+        gsap.to(obj, {
+          v: target, duration: 1.7, ease: 'power2.out',
+          /* 'top bottom' — как только блок появился в окне. С 'top 88%' счётчики
+             висели на нулях, пока посетитель не прокрутит: на первом экране
+             блок стоит ниже этой линии. */
+          scrollTrigger: { trigger: el, start: 'top bottom-=40', once: true },
+          onUpdate: () => { el.textContent = obj.v.toFixed(decimals); },
+        });
+      });
+
+      /* Magnetic primary CTA. Pointer events, not mouse events. One per page. */
+      const magnet = document.querySelector<HTMLElement>('[data-magnet]');
+      if (magnet && window.matchMedia('(hover: hover)').matches) {
+        magnet.addEventListener('pointermove', (e) => {
+          const r = magnet.getBoundingClientRect();
+          gsap.to(magnet, {
+            x: (e.clientX - r.left - r.width / 2) * 0.22,
+            y: (e.clientY - r.top - r.height / 2) * 0.3,
+            duration: 0.5, ease: 'power3.out',
+          });
+        });
+        magnet.addEventListener('pointerleave', () => {
+          gsap.to(magnet, { x: 0, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.45)' });
+        });
+      }
+
+      return () => { /* matchMedia cleans its own tweens up */ };
+    });
+
+    /* ── FAQ accordion ───────────────────────────────────────────────────
+       Interruptible by design: every toggle animates from the element's
+       CURRENT height, so a click mid-flight reverses smoothly instead of
+       jumping to the logical value first. (apple-design, rule 3.) */
+    document.querySelectorAll<HTMLElement>('[data-faq]').forEach((item) => {
+      const btn = item.querySelector<HTMLButtonElement>('button')!;
+      const panel = item.querySelector<HTMLElement>('.faq-panel')!;
+      const icon = item.querySelector<HTMLElement>('.faq-icon')!;
+      let open = false;
+
+      btn.addEventListener('click', () => {
+        open = !open;
+        btn.setAttribute('aria-expanded', String(open));
+        item.classList.toggle('is-open', open);
+
+        if (reduced) {
+          panel.style.height = open ? 'auto' : '0px';
+          return;
+        }
+        gsap.to(panel, {
+          height: open ? panel.scrollHeight : 0,
+          duration: open ? 0.52 : 0.38,   // exits are always faster than entrances
+          ease: open ? 'power3.out' : 'power2.in',
+          overwrite: true,
+        });
+        gsap.to(icon, { rotate: open ? 45 : 0, duration: 0.4, ease: 'power3.out', overwrite: true });
+      });
+    });
+
+    /* ── Mobile menu ─────────────────────────────────────────────────── */
+    const burger = document.querySelector<HTMLElement>('[data-burger]');
+    const drawer = document.querySelector<HTMLElement>('[data-drawer]');
+    if (burger && drawer) {
+      let shown = false;
+      const set = (v: boolean) => {
+        shown = v;
+        burger.setAttribute('aria-expanded', String(v));
+        document.body.style.overflow = v ? 'hidden' : '';
+        /* Input is never locked out: the tween can be reversed at any frame. */
+        gsap.to(drawer, {
+          autoAlpha: v ? 1 : 0,
+          y: v ? 0 : -12,
+          duration: v ? 0.4 : 0.26,
+          ease: v ? 'power3.out' : 'power2.in',
+          overwrite: true,
+        });
+      };
+      burger.addEventListener('click', () => set(!shown));
+      drawer.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => set(false)));
+      window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && shown) set(false); });
+    }
+
+    /* Fonts change metrics, which moves every trigger point. */
+    document.fonts?.ready.then(() => ScrollTrigger.refresh());
+  </script>
+
+  {/* Метрика подключается, только если номер счётчика задан. Пустое значение —
+      ни одного запроса наружу: демо не собирает данные посетителей.
+      is:inline обязателен: внутри подставляется серверное значение. */}
+  {config.metrikaId && (
+    <script is:inline set:html={`
+      (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+      m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
+      k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+      (window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');
+      ym(${config.metrikaId},'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:true});
+    `} />
+  )}
+  {config.metrikaId && (
+    <noscript><div><img src={`https://mc.yandex.ru/watch/${config.metrikaId}`} style="position:absolute;left:-9999px" alt="" /></div></noscript>
+  )}
+</body>
+</html>

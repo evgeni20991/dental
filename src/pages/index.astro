@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Stats from '../components/Stats.astro';
+import Services from '../components/Services.astro';
+import Why from '../components/Why.astro';
+import Process from '../components/Process.astro';
+import Doctors from '../components/Doctors.astro';
+import Faq from '../components/Faq.astro';
+import Reviews from '../components/Reviews.astro';
+import Booking from '../components/Booking.astro';
+import MobileBar from '../components/MobileBar.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../content/site';
+const c = site.ru;
+---
+<Base c={c} lang="ru">
+  <Nav c={c} />
+  <main id="main">
+    <Hero c={c} />
+    <Stats c={c} />
+    <Services c={c} />
+    <Why c={c} />
+    <Process c={c} />
+    <Doctors c={c} />
+    <Faq c={c} />
+    <Reviews c={c} />
+    <Booking c={c} />
+  </main>
+  <Footer c={c} />
+  <MobileBar c={c} />
+</Base>

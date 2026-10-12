@@ -1,0 +1,58 @@
+---
+import type { Content } from '../content/site';
+interface Props { c: Content; }
+const { c } = Astro.props;
+---
+<section id="faq" class="section">
+  <div class="shell faq-wrap">
+    <div class="sec-head faq-head">
+      <p class="label" data-reveal>{c.faq.label}</p>
+      <h2 class="h2" data-reveal>{c.faq.title}</h2>
+    </div>
+
+    <div class="faq-list">
+      {c.faq.items.map((f, i) => (
+        <div class="faq-item" data-faq data-reveal>
+          <button type="button" aria-expanded="false" aria-controls={'faq-p-' + i}>
+            <span>{f.q}</span>
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+            </span>
+          </button>
+          <div class="faq-panel" id={'faq-p-' + i}>
+            <p>{f.a}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-wrap { display: grid; gap: 30px; }
+  .faq-item { border-bottom: 1px solid var(--color-line); }
+  .faq-item button {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    background: none; border: 0; cursor: pointer; text-align: left;
+    padding: 22px 0; font: inherit; font-size: 1.03rem; color: var(--color-ink);
+    transition: color var(--dur-micro) var(--ease-out-soft);
+  }
+  .faq-item button:hover { color: var(--color-accent); }
+  .faq-icon {
+    flex: none; width: 34px; height: 34px; border-radius: 50%;
+    border: 1px solid var(--color-line); display: grid; place-items: center;
+    color: var(--color-muted);
+    transition: background-color 300ms var(--ease-out-soft),
+                color 300ms var(--ease-out-soft),
+                border-color 300ms var(--ease-out-soft);
+  }
+  .faq-item.is-open .faq-icon { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+  .faq-panel { height: 0; overflow: hidden; }
+  .faq-panel p { padding-bottom: 24px; color: var(--color-muted); font-size: 0.97rem; max-width: 62ch; }
+  @media (min-width: 940px) {
+    .faq-wrap { grid-template-columns: 0.8fr 1.2fr; gap: 60px; align-items: start; }
+    .faq-head { margin-bottom: 0; position: sticky; top: 110px; }
+  }
+</style>

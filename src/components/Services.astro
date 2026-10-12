@@ -1,0 +1,60 @@
+---
+import type { Content } from '../content/site';
+interface Props { c: Content; }
+const { c } = Astro.props;
+---
+<section id="services" class="section">
+  <div class="shell">
+    <div class="sec-head">
+      <p class="label" data-reveal>{c.services.label}</p>
+      <h2 class="h2" data-reveal>{c.services.title}</h2>
+      <p class="lead sec-lead" data-reveal>{c.services.lead}</p>
+    </div>
+
+    <div class="svc-grid">
+      {c.services.items.map((s) => (
+        <article class="card svc press" data-reveal-soft>
+          <span class="svc-n">{s.n}</span>
+          <h3 class="h3 svc-title">{s.title}</h3>
+          <p class="svc-price">{s.price}</p>
+          <p class="svc-text">{s.text}</p>
+          <span class="svc-arrow" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M4.5 11.5 11.5 4.5M6 4.5h5.5V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </article>
+      ))}
+    </div>
+    <p class="svc-note" data-reveal>{c.services.priceNote}</p>
+  </div>
+</section>
+
+<style>
+  .svc-grid { display: grid; gap: 16px; }
+  .svc { padding: 30px 28px 26px; position: relative; overflow: hidden; }
+  .svc::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(160deg, var(--color-accent-wash), transparent 60%);
+    opacity: 0; transition: opacity 420ms var(--ease-out-soft);
+  }
+  .svc > * { position: relative; }
+  .svc:hover::before { opacity: 0.75; }
+  .svc { transition: transform 420ms var(--ease-out-soft), border-color 420ms var(--ease-out-soft); }
+  @media (hover: hover) { .svc:hover { transform: translateY(-5px); border-color: var(--color-line); } }
+  .svc-n { font-family: var(--font-display); font-weight: 200; font-size: 0.95rem; color: var(--color-accent); letter-spacing: 0.04em; }
+  .svc-title { margin: 12px 0 6px; }
+  .svc-price {
+    font-family: var(--font-display); font-weight: 300; font-size: 1.12rem;
+    color: var(--color-accent); letter-spacing: -0.01em; margin-bottom: 10px;
+  }
+  .svc-note { margin-top: 22px; font-size: 0.88rem; color: var(--color-faint); }
+  .svc-text { font-size: 0.95rem; color: var(--color-muted); line-height: 1.55; }
+  .svc-arrow {
+    position: absolute; top: 26px; right: 26px; color: var(--color-faint);
+    transition: transform 420ms var(--ease-out-soft), color 420ms var(--ease-out-soft);
+  }
+  .svc:hover .svc-arrow { transform: translate(3px, -3px); color: var(--color-accent); }
+  @media (min-width: 700px) { .svc-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1040px) { .svc-grid { grid-template-columns: repeat(3, 1fr); } }
+</style>

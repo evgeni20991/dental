@@ -1,0 +1,80 @@
+---
+import type { Content } from '../content/site';
+interface Props { c: Content; }
+const { c } = Astro.props;
+const words = c.hero.title.split(' ');
+---
+<section class="hero">
+  <div class="shell hero-grid">
+    <div class="hero-copy">
+      <p class="label" data-hero-fade>{c.hero.label}</p>
+
+      <h1 class="display hero-title">
+        {words.map((w) => (
+          <span class="line-mask"><span class="hero-word">{w}</span></span>
+        ))}
+      </h1>
+
+      <p class="lead hero-lead" data-hero-fade>{c.hero.lead}</p>
+
+      <div class="hero-actions" data-hero-fade>
+        <a href="#booking" class="btn btn-primary" data-magnet>
+          {c.hero.ctaPrimary}
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="#services" class="btn btn-ghost press">{c.hero.ctaSecondary}</a>
+      </div>
+
+      <div class="hero-badge" data-hero-fade>
+        <strong>{c.hero.badge.value}</strong>
+        <span>{c.hero.badge.text}</span>
+      </div>
+    </div>
+
+    <div class="hero-art" data-hero-art>
+      <div class="hero-glow" aria-hidden="true"></div>
+      <picture data-float>
+        <source srcset="/img/tooth.webp" type="image/webp" />
+        <img src="/img/tooth.png" alt="" width="412" height="576" fetchpriority="high" decoding="async" />
+      </picture>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero { padding-top: 120px; padding-bottom: clamp(48px, 7vw, 88px); position: relative; overflow: hidden; }
+  .hero-grid { display: grid; gap: 32px; align-items: center; }
+  .hero-title { margin: 16px 0 22px; max-width: 23ch; }
+  /* Per-word masks: responsive by nature, and each word still rises out of
+     its own mask. Hard-coded line breaks would clip on narrow screens. */
+  .hero-title .line-mask {
+    display: inline-block; overflow: hidden; vertical-align: bottom;
+    padding-bottom: 0.14em; margin-bottom: -0.14em; margin-right: 0.26em;
+  }
+  .hero-title .hero-word { display: inline-block; }
+  .hero-lead { max-width: 46ch; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+  .hero-badge {
+    display: flex; align-items: center; gap: 14px; margin-top: 38px;
+    padding-top: 22px; border-top: 1px solid var(--color-line);
+    max-width: 380px;
+  }
+  .hero-badge strong { font-family: var(--font-display); font-weight: 300; font-size: 2.3rem; letter-spacing: -0.02em; }
+  .hero-badge span { font-size: 0.9rem; color: var(--color-muted); line-height: 1.45; }
+
+  .hero-art { position: relative; display: grid; place-items: center; }
+  .hero-art picture { position: relative; z-index: 1; display: block; }
+  .hero-art img { width: min(100%, 340px); height: auto; display: block; filter: drop-shadow(0 30px 50px rgba(30,79,216,0.18)); }
+  .hero-glow {
+    position: absolute; width: 78%; aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(circle, var(--color-accent-wash) 0%, transparent 68%);
+    filter: blur(10px);
+  }
+
+  @media (min-width: 980px) {
+    .hero { padding-top: 168px; }
+    .hero-grid { grid-template-columns: 1.28fr 0.72fr; gap: 44px; }
+  }
+</style>

@@ -1,0 +1,121 @@
+---
+import type { Content } from '../content/site';
+import { brand } from '../content/site';
+interface Props { c: Content; }
+const { c } = Astro.props;
+const name = c.code === 'ru' ? brand.name : brand.nameEn;
+---
+<header class="nav">
+  <div class="shell nav-inner">
+    <a href={c.code === 'ru' ? '/' : '/en/'} class="brand press">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">{name}</span>
+    </a>
+
+    <nav class="nav-links" aria-label="main">
+      {c.nav.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+
+    <div class="nav-side">
+      <a href={c.altHref} class="lang press" aria-label="Language">{c.altLabel}</a>
+      <a href={brand.phoneHref} class="nav-phone">{brand.phone}</a>
+      <a href={brand.phoneHref} class="nav-call press" aria-label={c.callLabel}>
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M4.6 3h3l1.2 3-1.7 1.2a9.5 9.5 0 0 0 4.7 4.7L13 10.2l3 1.2v3a1.5 1.5 0 0 1-1.7 1.5A12.6 12.6 0 0 1 3.1 4.7 1.5 1.5 0 0 1 4.6 3Z"
+                stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <a href="#booking" class="btn btn-primary nav-cta">{c.navCta}</a>
+      <button class="burger press" data-burger aria-expanded="false" aria-label="Menu">
+        <span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="drawer" data-drawer>
+    {c.nav.map((l) => <a href={l.href}>{l.label}</a>)}
+    <a href="#booking" class="btn btn-primary">{c.navCta}</a>
+    <a href={brand.phoneHref} class="drawer-phone">{brand.phone}</a>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: fixed; inset: 0 0 auto 0; z-index: 60;
+    transition: background-color 400ms var(--ease-out-soft),
+                border-color 400ms var(--ease-out-soft),
+                backdrop-filter 400ms var(--ease-out-soft);
+    border-bottom: 1px solid transparent;
+  }
+  .nav.is-stuck {
+    background: color-mix(in srgb, var(--color-canvas) 82%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom-color: var(--color-line);
+  }
+  .nav-inner { display: flex; align-items: center; gap: 24px; height: 76px; }
+  .brand { display: flex; align-items: center; gap: 10px; min-height: 44px; text-decoration: none; color: var(--color-ink); }
+  .brand-mark {
+    width: 22px; height: 22px; border-radius: 7px;
+    background: linear-gradient(140deg, var(--color-accent), #4f7cf0);
+  }
+  .brand-name { font-family: var(--font-display); font-weight: 400; font-size: 1.02rem; letter-spacing: -0.01em; }
+
+  .nav-links { display: none; gap: 26px; margin-inline: auto; }
+  .nav-links a {
+    text-decoration: none; color: var(--color-muted); font-size: 0.93rem;
+    position: relative; padding-block: 4px;
+    transition: color var(--dur-micro) var(--ease-out-soft);
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; left: 0; bottom: 0; height: 1px; width: 0;
+    background: var(--color-ink);
+    transition: width 320ms var(--ease-out-soft);
+  }
+  .nav-links a:hover { color: var(--color-ink); }
+  .nav-links a:hover::after { width: 100%; }
+
+  .nav-side { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  @media (max-width: 420px) { .nav-cta { display: none; } }
+  .lang {
+    display: grid; place-items: center; min-width: 44px; min-height: 44px;
+    text-decoration: none; color: var(--color-muted); font-size: 0.8rem; font-weight: 500;
+    letter-spacing: 0.08em; border: 1px solid var(--color-line);
+    border-radius: var(--radius-pill);
+    transition: border-color var(--dur-micro), color var(--dur-micro);
+  }
+  .lang:hover { border-color: var(--color-ink); color: var(--color-ink); }
+  .nav-phone { display: none; text-decoration: none; color: var(--color-ink); font-size: 0.92rem; }
+  /* Мобильный: кнопка записи и звонок обязаны быть видны без бургера —
+     иначе до единственной точки конверсии почти 8000 px прокрутки. */
+  .nav-cta { padding: 11px 18px; font-size: 0.88rem; }
+  .nav-call {
+    display: grid; place-items: center; width: 44px; height: 44px;
+    border-radius: var(--radius-pill); border: 1px solid var(--color-line);
+    color: var(--color-ink); text-decoration: none;
+    transition: border-color var(--dur-micro), background-color var(--dur-micro);
+  }
+  .nav-call:hover { border-color: var(--color-ink); }
+
+  .burger {
+    width: 44px; height: 44px; border-radius: var(--radius-pill);
+    border: 1px solid var(--color-line); background: transparent;
+    display: grid; place-content: center; gap: 5px; cursor: pointer;
+  }
+  .burger span { display: block; width: 16px; height: 1.5px; background: var(--color-ink); border-radius: 2px; }
+
+  .drawer {
+    position: fixed; inset: 76px 0 auto 0; z-index: 55;
+    background: var(--color-surface); border-bottom: 1px solid var(--color-line);
+    padding: 22px 20px 30px; display: flex; flex-direction: column; gap: 14px;
+    visibility: hidden; opacity: 0;
+  }
+  .drawer a { text-decoration: none; color: var(--color-ink); font-size: 1.08rem; min-height: 48px; display: flex; align-items: center; }
+  .drawer .btn { justify-content: center; margin-top: 8px; }
+  .drawer-phone { color: var(--color-muted) !important; font-size: 0.95rem !important; }
+
+  @media (min-width: 900px) {
+    .nav-links, .nav-phone { display: flex; }
+    .nav-call { display: none; }
+    .burger, .drawer { display: none; }
+  }
+</style>

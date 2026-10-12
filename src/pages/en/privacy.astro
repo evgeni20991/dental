@@ -1,0 +1,91 @@
+---
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import { site, brand } from '../../content/site';
+const c = site.en;
+const updated = '2 September 2026';
+---
+<Base c={{ ...c, meta: { title: 'Personal data policy — ' + brand.name, description: 'How we handle the details you leave through the booking form.' } }} lang="en">
+  <Nav c={c} />
+  <main id="main" class="legal section">
+    <div class="shell legal-inner">
+      <p class="label">Document</p>
+      <h1 class="h2">Personal data policy</h1>
+      <p class="legal-meta">Version of {updated}</p>
+
+      <h2>1. Who handles your data</h2>
+      <p>
+The operator is {brand.legalName}, TIN {brand.inn}, OGRN {brand.ogrn},
+        at {brand.addressEn}. Reach us on {brand.phone} or at {brand.email}.
+      </p>
+
+      <h2>2. What we collect</h2>
+      <p>
+Through the booking form: your name, phone number, the topic you chose and a comment
+        if you left one. The form asks for nothing else and collects nothing automatically.
+      </p>
+
+      <h2>3. Why</h2>
+      <p>
+One purpose only: to contact you about your enquiry — to call back, clarify details and
+        book an appointment. We do not use these details for mailings and do not pass them
+        to third parties for advertising.
+      </p>
+
+      <h2>4. On what basis</h2>
+      <p>
+On the basis of your consent, given when you send the form. You may withdraw it at any
+        time by writing to {brand.email} or calling us. After withdrawal we delete the data
+        within 10 working days.
+      </p>
+
+      <h2>5. How long we keep it</h2>
+      <p>
+Enquiries are kept no longer than needed to handle the request and to maintain medical
+        records for the periods set by law. After that the data is deleted or anonymised.
+      </p>
+
+      <h2>6. Who else sees it</h2>
+      <p>
+A booking is delivered to our internal work messenger, which only clinic staff handling
+        appointments can access. The site is hosted by a provider acting as a processor on
+        our instructions.
+      </p>
+
+      <h2>7. How it is protected</h2>
+      <p>
+The connection to the site is encrypted (HTTPS). Access keys for the delivery service are
+        stored encrypted on the hosting side and never appear in the site's code.
+      </p>
+
+      <h2>8. Your rights</h2>
+      <p>
+You may ask what data we hold, require it to be corrected, blocked or deleted, and
+        withdraw your consent. Contact us in any of the ways listed above.
+      </p>
+
+      <h2>9. Changes</h2>
+      <p>
+If this policy changes, the new version appears on this page with a new date.
+      </p>
+
+      <p class="legal-back"><a href="/">← Back to the site</a></p>
+    </div>
+  </main>
+  <Footer c={c} />
+</Base>
+
+<style>
+  .legal { padding-top: 130px; }
+  .legal-inner { max-width: 720px; }
+  .legal-inner .h2 { margin: 14px 0 8px; }
+  .legal-meta { font-size: 0.85rem; color: var(--color-faint); margin-bottom: 34px; }
+  .legal-inner h2 {
+    font-family: var(--font-display); font-weight: 300; font-size: 1.2rem;
+    margin: 30px 0 10px; letter-spacing: -0.01em;
+  }
+  .legal-inner p { color: var(--color-muted); line-height: 1.65; }
+  .legal-back { margin-top: 44px; }
+  .legal-back a { color: var(--color-accent); text-decoration: none; }
+</style>

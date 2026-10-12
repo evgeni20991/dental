@@ -1,0 +1,72 @@
+---
+import type { Content } from '../content/site';
+import { brand, config } from '../content/site';
+interface Props { c: Content; }
+const { c } = Astro.props;
+const year = new Date().getFullYear();
+const ru = c.code === 'ru';
+const name = ru ? brand.name : brand.nameEn;
+const privacyHref = ru ? '/privacy/' : '/en/privacy/';
+---
+<footer class="foot">
+  <div class="shell">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>{name}</span>
+      </div>
+      <nav class="foot-links" aria-label="footer">
+        {c.nav.map((l) => <a href={l.href}>{l.label}</a>)}
+        <a href={privacyHref}>{c.footer.privacy}</a>
+      </nav>
+    </div>
+
+    <!-- Медицинская деятельность лицензируется: сведения о лицензии и о
+         юридическом лице обязаны быть на сайте. Это же и вопрос доверия —
+         клиника без реквизитов выглядит как временная. -->
+    <div class="foot-legal">
+      {config.isDemo && <p class="foot-demo">{c.footer.demoNotice}</p>}
+      <p>{brand.legalName} · ИНН {brand.inn} · ОГРН {brand.ogrn}</p>
+      <p>{c.footer.licenceLabel}: {brand.licence}</p>
+      <p>{ru ? brand.address : brand.addressEn} · {ru ? brand.metro : brand.metroEn}</p>
+      <p class="foot-disclaimer">
+        {ru
+          ? 'Имеются противопоказания. Необходима консультация специалиста. Информация на сайте не является публичной офертой.'
+          : 'Contraindications may apply. A specialist consultation is required. The information on this site is not a public offer.'}
+      </p>
+      <p>© {year} {name} — {c.footer.rights}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .foot { padding-block: 44px 40px; border-top: 1px solid var(--color-line); }
+  .foot-top { display: grid; gap: 20px; padding-bottom: 26px; border-bottom: 1px solid var(--color-line); }
+  .foot-brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 400; }
+  .brand-mark { width: 20px; height: 20px; border-radius: 6px; background: linear-gradient(140deg, var(--color-accent), #4f7cf0); }
+  .foot-links { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+  /* 44px по высоте: ссылки подвала чаще всего и промахиваются на телефоне. */
+  .foot-links a {
+    display: flex; align-items: center; min-height: 44px;
+    color: var(--color-muted); text-decoration: none; font-size: 0.92rem;
+  }
+  .foot-links a:hover { color: var(--color-ink); }
+
+  .foot-legal { margin-top: 24px; display: grid; gap: 6px; }
+  .foot-legal p { font-size: 0.8rem; color: var(--color-faint); line-height: 1.5; }
+
+  /* Пометка демо: заметная, но не кричащая — она не должна портить
+     впечатление от работы, только не давать принять её за живую клинику. */
+  .foot-demo {
+    margin-bottom: 10px; padding: 9px 13px;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-soft);
+    color: var(--color-muted) !important;
+  }
+  .foot-disclaimer { margin-top: 8px; max-width: 68ch; }
+
+  @media (min-width: 860px) {
+    .foot-top { grid-template-columns: auto 1fr; align-items: center; gap: 40px; }
+    .foot-links { justify-content: flex-end; }
+  }
+</style>

@@ -1,0 +1,36 @@
+---
+import type { Content } from '../content/site';
+interface Props { c: Content; }
+const { c } = Astro.props;
+---
+<section id="process" class="section">
+  <div class="shell">
+    <div class="sec-head">
+      <p class="label" data-reveal>{c.process.label}</p>
+      <h2 class="h2" data-reveal>{c.process.title}</h2>
+    </div>
+    <ol class="steps">
+      {c.process.items.map((s) => (
+        <li class="step" data-reveal>
+          <span class="step-dot" aria-hidden="true"></span>
+          <span class="step-n">{s.n}</span>
+          <h3 class="h3 step-title">{s.title}</h3>
+          <p class="step-text">{s.text}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .steps { list-style: none; display: grid; gap: 28px; counter-reset: s; }
+  .step { position: relative; padding-top: 26px; border-top: 1px solid var(--color-line); }
+  .step-dot {
+    position: absolute; top: -4px; left: 0; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--color-accent);
+  }
+  .step-n { font-family: var(--font-display); font-weight: 200; font-size: 0.9rem; color: var(--color-faint); letter-spacing: 0.06em; }
+  .step-title { margin: 10px 0 8px; }
+  .step-text { font-size: 0.95rem; color: var(--color-muted); line-height: 1.55; }
+  @media (min-width: 760px) { .steps { grid-template-columns: repeat(4, 1fr); gap: 22px; } }
+</style>

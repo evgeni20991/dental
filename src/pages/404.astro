@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { site, brand } from '../content/site';
+const c = site.ru;
+---
+<!-- Cloudflare Pages сам отдаёт /404.html на любой ненайденный адрес.
+     Без этого файла человек видит серую страницу платформы с чужим логотипом
+     и уходит: для сайта клиники это выглядит как поломка, а не как опечатка. -->
+<Base
+  c={{ ...c, meta: { title: c.notFound.title + ' — ' + brand.name, description: c.notFound.text } }}
+  lang="ru"
+>
+  <Nav c={c} />
+  <main id="main" class="section nf">
+    <div class="shell nf-inner">
+      <p class="label">404 · {c.notFound.label}</p>
+      <h1 class="h2 nf-title">{c.notFound.title}</h1>
+      <p class="nf-text">{c.notFound.text}</p>
+      <div class="nf-actions">
+        <a class="btn btn-primary press" href="/">{c.notFound.cta}</a>
+        <a class="btn nf-call press" href={brand.phoneHref}>{brand.phone}</a>
+      </div>
+    </div>
+  </main>
+  <Footer c={c} />
+</Base>
+
+<style>
+  /* Высота под шапку: страница не должна выглядеть обрезанной сверху. */
+  .nf { display: grid; align-items: center; min-height: 62vh; }
+  .nf-inner { max-width: 56ch; }
+  .nf-title { margin: 14px 0 12px; }
+  .nf-text { color: var(--color-muted); line-height: 1.6; }
+  .nf-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+  /* Телефон отдельной целью: на 404 чаще всего попадают с телефона по
+     старой ссылке, и позвонить проще, чем искать нужный раздел заново. */
+  .nf-call { border: 1px solid var(--color-line); color: var(--color-ink); }
+  .nf-call:hover { border-color: var(--color-accent); }
+</style>

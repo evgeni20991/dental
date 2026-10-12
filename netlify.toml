@@ -1,0 +1,10 @@
+# Выкладка на Netlify (с 11.10.2026 pages.dev из России открывается в 2 из 8 сетей).
+# Сборку делаем у себя и выкладываем готовую папку:
+#   npm run build
+#   netlify deploy --dir=dist            (черновик: проверить, кредиты не тратит)
+#   netlify deploy --prod --dir=dist     (боевой выпуск: 15 кредитов из 300 в месяц)
+[build]
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
