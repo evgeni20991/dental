@@ -4,7 +4,7 @@
 и помечены в `src/content/site.ts`. Портреты врачей сгенерированы, фото реальных людей не использовались.
 Демо закрыто от индексации.
 
-**Демо:** https://dental-studio-ru.pages.dev
+**Демо:** https://dental-studio-ru.netlify.app
 
 ## Что внутри
 
